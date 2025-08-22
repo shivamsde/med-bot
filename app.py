@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 VERIFY_TOKEN = os.environ.get("pharma_bot")
-ACCESS_TOKEN = os.environ.get("EAARuPWJ117kBPMdwnIEWeGI6igYTWJQgp6GlN0JtZCCW29F7v6aVgQXXnycelazUZCr0HmePUpah0aWnFvPkhLuGrQpR7tawJlTIbC1n4DVgYnbeqHVdgIrzELQXq84ylutBKRaYzWSMWkKHhZC3GRb9ic9uXnHBUBCQKAS2e6cZB046IJXkrejKo0Rmtu63ZBPwGEvZCH9wPtYOFakNSMyUvKUCOFmRXD2gQM")
+ACCESS_TOKEN = os.environ.get("1247109830793145|Ui00En9DX7E2j2QA8SXOs20uzOk")
 PHONE_NUMBER_ID = os.environ.get("747806788420880")
 
 @app.route('/webhook', methods=['GET', 'POST'])
