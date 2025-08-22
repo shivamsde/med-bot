@@ -1,42 +1,48 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import requests
+import os
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "pharma_bot"
-ACCESS_TOKEN = "EAARuPWJ117kBPMdwnIEWeGI6igYTWJQgp6GlN0JtZCCW29F7v6aVgQXXnycelazUZCr0HmePUpah0aWnFvPkhLuGrQpR7tawJlTIbC1n4DVgYnbeqHVdgIrzELQXq84ylutBKRaYzWSMWkKHhZC3GRb9ic9uXnHBUBCQKAS2e6cZB046IJXkrejKo0Rmtu63ZBPwGEvZCH9wPtYOFakNSMyUvKUCOFmRXD2gQM"
-PHONE_NUMBER_ID = "747806788420880"
+VERIFY_TOKEN = os.environ.get("pharma_bot")
+ACCESS_TOKEN = os.environ.get("EAARuPWJ117kBPMdwnIEWeGI6igYTWJQgp6GlN0JtZCCW29F7v6aVgQXXnycelazUZCr0HmePUpah0aWnFvPkhLuGrQpR7tawJlTIbC1n4DVgYnbeqHVdgIrzELQXq84ylutBKRaYzWSMWkKHhZC3GRb9ic9uXnHBUBCQKAS2e6cZB046IJXkrejKo0Rmtu63ZBPwGEvZCH9wPtYOFakNSMyUvKUCOFmRXD2gQM")
+PHONE_NUMBER_ID = os.environ.get("747806788420880")
 
-# Step 1: Webhook Verification
-@app.route("/webhook", methods=["GET"])
-def verify():
-    if request.args.get("hub.verify_token") == VERIFY_TOKEN:
-        return request.args.get("hub.challenge")
-    return "Invalid verification token"
-
-# Step 2: Receive Messages
-@app.route("/webhook", methods=["POST"])
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
-    data = request.get_json()
-    if data['object'] == 'whatsapp_business_account':
-        for entry in data['entry']:
-            for change in entry['changes']:
-                message = change['value']['messages'][0]
-                sender = message['from']
-                text = message['text']['body']
+    if request.method == 'GET':
+        # Verification
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        if token == VERIFY_TOKEN:
+            return challenge
+        return "Verification failed", 403
 
-                if "order" in text.lower():
-                    send_message(sender, "Please upload your prescription 📄")
-                elif "hi" in text.lower():
-                    send_message(sender, "Hello 👋 Welcome to PharmaCo! Type 'order' to place your order.")
-                else:
-                    send_message(sender, "Sorry, I didn’t understand. Type 'order' to start.")
+    elif request.method == 'POST':
+        data = request.get_json()
+        print("Webhook event:", data)  # log everything
 
-    return jsonify(success=True)
+        try:
+            change = data["entry"][0]["changes"][0]["value"]
 
-# Step 3: Send Messages
-def send_message(to, text):
-    url = f"https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages"
+            # Only process if "messages" exists
+            if "messages" in change:
+                message = change["messages"][0]
+                sender = message["from"]
+                text = message["text"]["body"]
+
+                print(f"📩 Message from {sender}: {text}")
+                reply(sender, f"You said: {text}")
+            else:
+                print("⚠️ Webhook event without 'messages' (probably status update). Ignored.")
+
+        except Exception as e:
+            print("❌ Error handling webhook:", str(e))
+
+        return "EVENT_RECEIVED", 200
+
+def reply(to, text):
+    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
         "Content-Type": "application/json"
@@ -46,7 +52,8 @@ def send_message(to, text):
         "to": to,
         "text": {"body": text}
     }
-    requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
+    print("Reply response:", response.json())
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(host="0.0.0.0", port=10000)
