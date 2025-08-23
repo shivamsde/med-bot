@@ -34,7 +34,7 @@ def webhook():
                 text = message.get("text", {}).get("body", "")
 
                 print(f"📩 Incoming message from {sender}: {text}")
-                reply(sender, f"You said: {text}")
+                reply_text(sender, f"You said: {text}")
 
             # ✅ Status updates (delivered, read, etc.)
             elif "statuses" in change:
