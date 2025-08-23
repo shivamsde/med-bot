@@ -10,40 +10,43 @@ ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")      # your permanent token
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID") # your WhatsApp Business number ID
 
 # Webhook endpoint
-@app.route("/webhook", methods=["GET", "POST"])
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
-    if request.method == "GET":
-        # Meta webhook verification
+    if request.method == 'GET':
+        # Verification
         token = request.args.get("hub.verify_token")
         challenge = request.args.get("hub.challenge")
         if token == VERIFY_TOKEN:
             return challenge
         return "Verification failed", 403
 
-    elif request.method == "POST":
-        # Incoming message handling
+    elif request.method == 'POST':
         data = request.get_json()
-        print("Webhook event:", data)
+        print("🔔 Webhook event received")
 
         try:
             change = data["entry"][0]["changes"][0]["value"]
 
-            # Only process if "messages" exists
+            # ✅ Incoming messages
             if "messages" in change:
                 message = change["messages"][0]
                 sender = message["from"]
                 text = message.get("text", {}).get("body", "")
 
-                print(f"📩 Message from {sender}: {text}")
+                print(f"📩 Incoming message from {sender}: {text}")
+                reply(sender, f"You said: {text}")
 
-                # Auto-reply with text
-                reply_text(sender, f"You said: {text}")
+            # ✅ Status updates (delivered, read, etc.)
+            elif "statuses" in change:
+                status = change["statuses"][0]
+                msg_id = status.get("id")
+                msg_status = status.get("status")
+                recipient = status.get("recipient_id")
 
-                # Optional: send template message
-                # reply_template(sender, "hello_world")  # uncomment if template is needed
+                print(f"📬 Status update: message {msg_id} → {msg_status} for {recipient}")
 
             else:
-                print("⚠️ Webhook event without 'messages'. Ignored.")
+                print("⚠️ Unknown webhook event type:", change)
 
         except Exception as e:
             print("❌ Error handling webhook:", str(e))
