@@ -5,9 +5,9 @@ import os
 app = Flask(__name__)
 
 # ✅ Environment variables (set these in Render)
-VERIFY_TOKEN = os.environ.get("pharma_bot")  # your webhook verify token
-ACCESS_TOKEN = os.environ.get("EAARuPWJ117kBPYzrJSx7NOurezrFOWOZBPwPZBLeDTS3ENItxNabMc8DL0VuQGxGZBUdEW8tNQ4kxVodEzxenYhkW5ayibZBK8YQ1F2Xgi3PcwxoPHsTO2WTZBzneVWi7MsSkhGQDPj4E5Pn2l2IyZA7W9gmoLMZCJZAg2iqXRu8qJo1Jskld2h3hN5upAD2fZBZAgrMimyvNNZAWKu8QB89gPB1cc3LZCQA5ZBIHdPwi")      # your permanent token
-PHONE_NUMBER_ID = os.environ.get("747806788420880") # your WhatsApp Business number ID
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")  # your webhook verify token
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")      # your permanent token
+PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID") # your WhatsApp Business number ID
 
 # Webhook endpoint
 @app.route("/webhook", methods=["GET", "POST"])
